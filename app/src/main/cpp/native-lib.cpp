@@ -8,13 +8,14 @@
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
 
-VadInst *vad;
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_brainbear_webrtc_1vad_1android_VADHandler_create(JNIEnv *env, jclass type, jint mode) {
+Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1create(JNIEnv *env, jclass type,
+                                                                  jint mode) {
 
     int ret = 0;
+    VadInst *vad;
     vad = WebRtcVad_Create();
     LOGD("create=%d", vad == NULL);
 
@@ -24,29 +25,34 @@ Java_com_brainbear_webrtc_1vad_1android_VADHandler_create(JNIEnv *env, jclass ty
     ret = WebRtcVad_set_mode(vad, mode);
     LOGD("set mode=%d", ret);
 
-    return ret;
+    return (jint) (vad);
 }
-
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_brainbear_webrtc_1vad_1android_VADHandler_process(JNIEnv *env, jclass type, jint fs,
-                                                           jshortArray data_, jint len) {
+Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1process(JNIEnv *env, jclass type,
+                                                                   jint pointer, jint fs,
+                                                                   jshortArray data_, jint len) {
     jshort *data = env->GetShortArrayElements(data_, NULL);
 
-    int ret = WebRtcVad_Process(vad, fs, data, len);
+    int ret = 0;
+    ret = WebRtcVad_ValidRateAndFrameLength(fs, len);
+    if (ret < 0) {
+        LOGD("invalid rate and frame length");
+    }
+    ret = WebRtcVad_Process((VadInst *) pointer, fs, data, len);
 
     env->ReleaseShortArrayElements(data_, data, 0);
 
     return ret;
 }
 
-
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_brainbear_webrtc_1vad_1android_VADHandler_release(JNIEnv *env, jclass type) {
+Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1release(JNIEnv *env, jclass type,
+                                                                   jint pointer) {
 
-    WebRtcVad_Free(vad);
+    WebRtcVad_Free((VadInst *) pointer);
     return 0;
 
 }

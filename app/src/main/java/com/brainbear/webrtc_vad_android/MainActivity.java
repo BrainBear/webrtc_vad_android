@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         recording = true;
 
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -71,24 +72,35 @@ public class MainActivity extends AppCompatActivity {
                 AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, frequency, channelConfiguration, audioEncoding, minBufferSize);
                 audioRecord.startRecording();
 
-                VADHandler vadHandler = new VADHandler();
+                VADHandler vadHandler = null;
+                try {
+                    vadHandler = new VADHandler.Builder()
+                            .setAggressivenessMode(VADHandler.MODE_VERY_AGGRESSIVE)
+                            .setChannel(VADHandler.CHANNEL_MONO)
+                            .setFrameSize(VADHandler.FRAME_20MS)
+                            .setPcmBitWidth(VADHandler.PCM_16BIT)
+                            .setSampleRate(VADHandler.SAMPLE_RATE_16K)
+                            .setBos(100)
+                            .setEos(1000)
+                            .build();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-                int ret = vadHandler.create(3);
-                Log.i(TAG, "create vad handler:" + ret);
+
+                vadHandler.setVadListener(new VADHandler.VADListener() {
+                    @Override
+                    public void onVad(boolean active) {
+                        Log.i(TAG, "onVad: " + active);
+                        refreshView(active ? 1 : 0);
+                    }
+                });
 
 
                 while (recording) {
-                    byte[] frame = new byte[320];
-                    int read = audioRecord.read(frame, 0, frame.length);
-                    Log.d(TAG, "run: " + read);
-
-                    short[] vad_data = new short[160];
-                    ByteBuffer.wrap(frame).order(ByteOrder.LITTLE_ENDIAN)
-                            .asShortBuffer().get(vad_data);
-
-                    int vad = vadHandler.process(16000, vad_data, 160);
-                    Log.i(TAG, "vad:" + vad);
-                    refreshView(vad);
+                    byte[] frame = new byte[1024];
+                    audioRecord.read(frame, 0, frame.length);
+                    vadHandler.process(frame, frame.length);
                 }
 
                 audioRecord.stop();
