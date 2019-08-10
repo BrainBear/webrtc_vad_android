@@ -13,7 +13,7 @@ add_definitions(-DWEBRTC_POSIX)
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-        native-lib
+        vad-lib
 
         # Sets the library as a shared library.
         SHARED
@@ -62,7 +62,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        native-lib
+        vad-lib
 
         # Links the target library to the log library
         # included in the NDK.

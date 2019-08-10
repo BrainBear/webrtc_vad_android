@@ -4,15 +4,14 @@ import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import com.brainbear.vad.VADHandler;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,11 +19,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int frequency = 16000;
     private static final int channelConfiguration = AudioFormat.CHANNEL_IN_MONO;
     private static final int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
-
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
 
     private Button btnStop;
     private Button btnStart;

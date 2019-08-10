@@ -4,15 +4,13 @@
 #include <android/log.h>
 #include "vad/webrtc_vad.h"
 
-#define  LOG_TAG    "jnitest"
+#define  LOG_TAG    "brainbear"
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
-
 
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1create(JNIEnv *env, jclass type,
-                                                                  jint mode) {
+Java_com_brainbear_vad_VADHandler_native_1create(JNIEnv *env, jclass type, jint mode) {
 
     int ret = 0;
     VadInst *vad;
@@ -26,13 +24,14 @@ Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1create(JNIEnv *env, j
     LOGD("set mode=%d", ret);
 
     return (jint) (vad);
+
 }
+
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1process(JNIEnv *env, jclass type,
-                                                                   jint pointer, jint fs,
-                                                                   jshortArray data_, jint len) {
+Java_com_brainbear_vad_VADHandler_native_1process(JNIEnv *env, jclass type, jint pointer, jint fs,
+                                                  jshortArray data_, jint len) {
     jshort *data = env->GetShortArrayElements(data_, NULL);
 
     int ret = 0;
@@ -49,10 +48,8 @@ Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1process(JNIEnv *env, 
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_brainbear_webrtc_1vad_1android_VADHandler_native_1release(JNIEnv *env, jclass type,
-                                                                   jint pointer) {
+Java_com_brainbear_vad_VADHandler_native_1release(JNIEnv *env, jclass type, jint pointer) {
 
     WebRtcVad_Free((VadInst *) pointer);
     return 0;
-
 }

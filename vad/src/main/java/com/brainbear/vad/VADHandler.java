@@ -1,4 +1,4 @@
-package com.brainbear.webrtc_vad_android;
+package com.brainbear.vad;
 
 import android.support.annotation.IntDef;
 import android.util.Log;
@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * created by canxionglian on 2019-07-28
+ * created by canxionglian on 2019-08-11
  */
 public class VADHandler {
 
@@ -23,97 +23,59 @@ public class VADHandler {
 
     public native static int native_release(int pointer);
 
-
-    private final Builder mBuilder;
-
-    public static class Builder {
-        @SampleRate
-        private int sampleRate;
-        @FrameSize
-        private int frameSize;
-        private long eos;
-        private long bos;
-        @AggressivenessMode
-        private int aggressivenessMode;
-        @ChannelConfig
-        private int channel = CHANNEL_MONO;
-        @BitWidth
-        private int pcmBitWidth = PCM_16BIT;
-
-
-        public VADHandler build() throws Exception {
-            return new VADHandler(this);
-        }
-
-        @SampleRate
-        public int getSampleRate() {
-            return sampleRate;
-        }
-
-        public Builder setSampleRate(@SampleRate int sampleRate) {
-            this.sampleRate = sampleRate;
-            return this;
-        }
-
-        @FrameSize
-        public int getFrameSize() {
-            return frameSize;
-        }
-
-        public Builder setFrameSize(@FrameSize int frameSize) {
-            this.frameSize = frameSize;
-            return this;
-        }
-
-        public long getEos() {
-            return eos;
-        }
-
-        public Builder setEos(long eos) {
-            this.eos = eos;
-            return this;
-        }
-
-        public long getBos() {
-            return bos;
-        }
-
-        public Builder setBos(long bos) {
-            this.bos = bos;
-            return this;
-        }
-
-        @AggressivenessMode
-        public int getAggressivenessMode() {
-            return aggressivenessMode;
-        }
-
-        public Builder setAggressivenessMode(@AggressivenessMode int aggressivenessMode) {
-            this.aggressivenessMode = aggressivenessMode;
-            return this;
-        }
-
-        @ChannelConfig
-        public int getChannel() {
-            return channel;
-        }
-
-        public Builder setChannel(@ChannelConfig int channel) {
-            this.channel = channel;
-            return this;
-        }
-
-        @BitWidth
-        public int getPcmBitWidth() {
-            return pcmBitWidth;
-        }
-
-        public Builder setPcmBitWidth(@BitWidth int pcmBitWidth) {
-            this.pcmBitWidth = pcmBitWidth;
-            return this;
-        }
+    static {
+        System.loadLibrary("vad-lib");
     }
 
+    public static final int SAMPLE_RATE_8K = 8000;
+    public static final int SAMPLE_RATE_16K = 16000;
+    public static final int SAMPLE_RATE_32K = 32000;
+    public static final int SAMPLE_RATE_48K = 48000;
+
+
+    @IntDef({SAMPLE_RATE_8K, SAMPLE_RATE_16K, SAMPLE_RATE_32K, SAMPLE_RATE_48K})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SampleRate {
+    }
+
+    public static final int FRAME_10MS = 10;
+    public static final int FRAME_20MS = 20;
+    public static final int FRAME_30MS = 30;
+
+    @IntDef({FRAME_10MS, FRAME_20MS, FRAME_30MS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FrameSize {
+    }
+
+
+    public static final int CHANNEL_MONO = 0;
+
+    @IntDef({CHANNEL_MONO})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ChannelConfig {
+    }
+
+    public static final int PCM_16BIT = 0;
+
+    @IntDef({PCM_16BIT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface BitWidth {
+    }
+
+
+    public static final int MODE_NORMAL = 0;
+    public static final int MODE_LOW_BITRATE = 1;
+    public static final int MODE_AGGRESSIVE = 2;
+    public static final int MODE_VERY_AGGRESSIVE = 3;
+
+
+    @IntDef({MODE_NORMAL, MODE_LOW_BITRATE, MODE_AGGRESSIVE, MODE_VERY_AGGRESSIVE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AggressivenessMode {
+    }
+
+
+    private final Builder mBuilder;
 
     private int mNativePointer;
 
@@ -230,54 +192,6 @@ public class VADHandler {
     }
 
 
-    public static final int SAMPLE_RATE_8K = 8000;
-    public static final int SAMPLE_RATE_16K = 16000;
-    public static final int SAMPLE_RATE_32K = 32000;
-    public static final int SAMPLE_RATE_48K = 48000;
-
-
-    @IntDef({SAMPLE_RATE_8K, SAMPLE_RATE_16K, SAMPLE_RATE_32K, SAMPLE_RATE_48K})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SampleRate {
-    }
-
-    public static final int FRAME_10MS = 10;
-    public static final int FRAME_20MS = 20;
-    public static final int FRAME_30MS = 30;
-
-    @IntDef({FRAME_10MS, FRAME_20MS, FRAME_30MS})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FrameSize {
-    }
-
-
-    public static final int CHANNEL_MONO = 0;
-
-    @IntDef({CHANNEL_MONO})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ChannelConfig {
-    }
-
-    public static final int PCM_16BIT = 0;
-
-    @IntDef({PCM_16BIT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface BitWidth {
-    }
-
-
-    public static final int MODE_NORMAL = 0;
-    public static final int MODE_LOW_BITRATE = 1;
-    public static final int MODE_AGGRESSIVE = 2;
-    public static final int MODE_VERY_AGGRESSIVE = 3;
-
-
-    @IntDef({MODE_NORMAL, MODE_LOW_BITRATE, MODE_AGGRESSIVE, MODE_VERY_AGGRESSIVE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AggressivenessMode {
-    }
-
-
     private VADListener mVadListener;
 
     public void setVadListener(VADListener vadListener) {
@@ -290,4 +204,93 @@ public class VADHandler {
     }
 
 
+    public static class Builder {
+        @SampleRate
+        private int sampleRate;
+        @FrameSize
+        private int frameSize;
+        private long eos;
+        private long bos;
+        @AggressivenessMode
+        private int aggressivenessMode;
+        @ChannelConfig
+        private int channel = CHANNEL_MONO;
+        @BitWidth
+        private int pcmBitWidth = PCM_16BIT;
+
+
+        public VADHandler build() throws Exception {
+            return new VADHandler(this);
+        }
+
+        @SampleRate
+        public int getSampleRate() {
+            return sampleRate;
+        }
+
+        public Builder setSampleRate(@SampleRate int sampleRate) {
+            this.sampleRate = sampleRate;
+            return this;
+        }
+
+        @FrameSize
+        public int getFrameSize() {
+            return frameSize;
+        }
+
+        public Builder setFrameSize(@FrameSize int frameSize) {
+            this.frameSize = frameSize;
+            return this;
+        }
+
+        public long getEos() {
+            return eos;
+        }
+
+        public Builder setEos(long eos) {
+            this.eos = eos;
+            return this;
+        }
+
+        public long getBos() {
+            return bos;
+        }
+
+        public Builder setBos(long bos) {
+            this.bos = bos;
+            return this;
+        }
+
+        @AggressivenessMode
+        public int getAggressivenessMode() {
+            return aggressivenessMode;
+        }
+
+        public Builder setAggressivenessMode(@AggressivenessMode int aggressivenessMode) {
+            this.aggressivenessMode = aggressivenessMode;
+            return this;
+        }
+
+        @ChannelConfig
+        public int getChannel() {
+            return channel;
+        }
+
+        public Builder setChannel(@ChannelConfig int channel) {
+            this.channel = channel;
+            return this;
+        }
+
+        @BitWidth
+        public int getPcmBitWidth() {
+            return pcmBitWidth;
+        }
+
+        public Builder setPcmBitWidth(@BitWidth int pcmBitWidth) {
+            this.pcmBitWidth = pcmBitWidth;
+            return this;
+        }
+    }
+
 }
+
