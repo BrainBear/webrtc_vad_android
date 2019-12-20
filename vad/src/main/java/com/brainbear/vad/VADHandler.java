@@ -128,6 +128,9 @@ public class VADHandler {
     }
 
 
+    /**
+     * flag 表示时间片 如果值为正表示是正在说话的时间片，如果值为负表示是静音时间片，时间片长度等于 flag * frameSize
+     */
     private int flag;
     private int mCurrentStatus = STATUS_IDLE;
 
@@ -140,25 +143,32 @@ public class VADHandler {
 
     private void handleVAD(boolean active) {
         if (active) {
+            //识别到说话 但是当前标志是负值 证明之前一直处于静音状态 需要重置标志位
             if (flag < 0) {
                 flag = 0;
                 beginTime = System.currentTimeMillis();
             }
+
+            //和当前状态不一致，继续累计时间片长度
             if (mCurrentStatus != STATUS_ACTIVE) {
                 flag++;
             }
 
         } else {
+            //识别到静音 但是当前标志是正值 证明之前的状态不是静音 需要重置标志位
             if (flag > 0) {
                 flag = 0;
                 beginTime = System.currentTimeMillis();
             }
+
+            //和当前状态不一致，继续累计时间片长度
             if (mCurrentStatus != STATUS_INACTIVE) {
                 flag--;
             }
         }
 
 
+        //计算累计的时间片长度是否满足设定的长度
         if (flag > 0
                 && mCurrentStatus != STATUS_ACTIVE
                 && flag * mBuilder.frameSize > mBuilder.bos) {
